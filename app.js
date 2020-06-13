@@ -12,7 +12,11 @@ const { open } = require('./db/connect')
 const app = new Koa()
 
 open()
-app.use(cors())
+app.use(cors({
+    exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'],
+    allowMethods: ['GET', 'POST', 'DELETE', 'PATCH', 'PUT', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization', 'Accept'],
+}))
 app.use(logger())
 app.use(koaStatic(path.join(__dirname, 'public')));
 app.use(error({

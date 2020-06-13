@@ -2,27 +2,36 @@ const Article = require("../models/article");
 
 class ArticleCtl {
   async find(ctx) {
-    const { per_page = 10 } = ctx.query;
+    const { perPage = 5 } = ctx.query
+    const per_page = Math.max(perPage * 1 , 1)
     const page = Math.max(ctx.query.page * 1, 1) - 1;
-    const perPage = Math.max(per_page * 1, 1);
     const key = new RegExp(ctx.query.key);
     const tag = ctx.query.tag;
     let article;
+    let count;
     if (tag) {
       article = await Article.find({
         title: key,
         tags: { $elemMatch: { $eq: tag } },
       }).sort({_id: -1})
-        .limit(perPage)
-        .skip(perPage * page);
+        .limit(per_page)
+        .skip(per_page * page);
+      count = await Article.countDocuments({
+        title: key,
+        tags: { $elemMatch: { $eq: tag } },
+      })
     } else {
       article = await Article.find({
         title: key,
       }).sort({_id: -1})
-        .limit(perPage)
-        .skip(perPage * page);
+        .limit(per_page)
+        .skip(per_page * page);
+        count = await Article.countDocuments({
+          title: key
+        })
     }
-    ctx.body = article;
+    
+    ctx.body = {article, count};
   }
 
   async findOne(ctx) {
@@ -38,9 +47,13 @@ class ArticleCtl {
   }
   //管理界面获取文章列表
   async findAdmin(ctx){
-    const article = await Article.find()
+    const page = Math.max(ctx.query.page * 1, 1) - 1;
+    const article = await Article.find().sort({_id: -1})
+    .limit(10)
+    .skip(10 * page);
+    const count = await Article.countDocuments()
     const data = article.map(({title, _id, createdAt}) => ({title, _id, createdAt}))
-    ctx.body = data
+    ctx.body = {data, count}
   }
   //修改文章
   async update(ctx){
@@ -54,9 +67,11 @@ class ArticleCtl {
         require: true,
       },
     });
-    const article = await Article.findById(ctx.params.id).update(ctx.request.body)
+    const article = await Article.findById(ctx.params.id)
     ctx.body = article
   }
+
+  // 
 
   async create(ctx) {
     ctx.verifyParams({

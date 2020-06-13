@@ -7,7 +7,7 @@ router.get('/admin', findAdmin)
 router.get('/random', findRandom)
 router.post('/', create)
 router.get('/:id', findOne)
-router.patch('/:id', update)
+router.put('/:id', update)
 router.get('/topic/:topic', getTopic)
 router.delete('/:id', del)
 
