@@ -67,7 +67,7 @@ class ArticleCtl {
         require: true,
       },
     });
-    const article = await Article.findById(ctx.params.id)
+    const article = await Article.findByIdAndUpdate(ctx.params.id, ctx.request.body)
     ctx.body = article
   }
 
