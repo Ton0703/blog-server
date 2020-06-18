@@ -12,7 +12,19 @@ const { open } = require('./db/connect')
 const app = new Koa()
 
 open()
-app.use(cors())
+app.use(cors({
+    origin: function(ctx) {
+      if (ctx.url === '/test') {
+        return false;
+      }
+      return '*';
+    },
+    exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'],
+    maxAge: 5,
+    credentials: true,
+    allowMethods: ['GET', 'POST', 'DELETE', 'PUT'],
+    allowHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  }))
 app.use(logger())
 app.use(koaStatic(path.join(__dirname, 'public')));
 app.use(error({

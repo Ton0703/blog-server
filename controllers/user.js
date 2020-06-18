@@ -4,14 +4,31 @@ const axios = require("axios");
 const { github } = require("../config");
 const { secret } = require("../config");
 
+function decodeQuery(url) {
+  const params = {}
+  const paramsStr = url.replace(/(\S*)\?/, '') // a=1&b=2&c=&d=xxx&e
+  paramsStr.split('&').forEach(v => {
+    const d = v.split('=')
+    if (d[1] && d[0]) params[d[0]] = d[1]
+  })
+  return params
+}
+
 class UserCtl {
   async login(ctx) {
-    const {code} = ctx.request.body;
+    const {code} = ctx.request.body;    
     const result = await axios.post(
       "https://github.com/login/oauth/access_token",
-      { client_id: github.client_id, client_secret: github.client_secret, code }
+      { client_id: github.client_id, client_secret: github.client_secret, code: code }
     );
-    ctx.body = code
+    const { access_token } = decodeQuery(result.data)
+    // if(access_token){
+    //   const result2 = await axios.get(`https://api.github.com/user?access_token=${access_token}`)
+    //   const githubInfo = result2.data
+    //   ctx.body = githubInfo
+    // }
+    //const result2 = await axios.get(`https://api.github.com/user?access_token=${access_token}`)
+    ctx.body = access_token
   }
   async register(ctx) {
     const { name } = ctx.request.body;
